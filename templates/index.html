@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnLoop | Study Companion</title>
+
+    <!-- Fonts: Rajdhani for HUD text, Inter for body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind Configuration for Custom Colors/Fonts -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        space: {
+                            900: '#050b14',
+                            800: '#0f172a',
+                            700: '#1e293b',
+                        },
+                        neon: {
+                            cyan: '#00f3ff',
+                            purple: '#bc13fe',
+                            green: '#0aff60',
+                            blue: '#2c5af2'
+                        }
+                    },
+                    fontFamily: {
+                        hud: ['Rajdhani', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse-subtle 6s ease-in-out infinite',
+                        /* Slowed down and made subtle */
+                        'float': 'float 8s ease-in-out infinite',
+                        'float-delayed': 'float 8s ease-in-out 4s infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'slide-up': 'slideUp 0.4s ease-out forwards',
+                        'comet': 'comet 12s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': {
+                                transform: 'translateY(0) scale(1)'
+                            },
+                            '50%': {
+                                transform: 'translateY(-20px) scale(1.05)'
+                            },
+                        },
+                        /* New Custom Subtle Pulse */
+                        'pulse-subtle': {
+                            '0%, 100%': {
+                                opacity: '1'
+                            },
+                            '50%': {
+                                opacity: '0.85'
+                            },
+                            /* Only dims slightly */
+                        },
+                        glow: {
+                            '0%': {
+                                boxShadow: '0 0 5px #00f3ff, 0 0 10px #00f3ff'
+                            },
+                            '100%': {
+                                boxShadow: '0 0 20px #00f3ff, 0 0 30px #00f3ff'
+                            },
+                        },
+                        slideUp: {
+                            '0%': {
+                                opacity: '0',
+                                transform: 'translateY(20px)'
+                            },
+                            '100%': {
+                                opacity: '1',
+                                transform: 'translateY(0)'
+                            },
+                        },
+                        comet: {
+                            '0%': {
+                                transform: 'translateX(-20vw) translateY(-20vh) rotate(45deg)',
+                                opacity: '0'
+                            },
+                            '10%': {
+                                opacity: '1'
+                            },
+                            '100%': {
+                                transform: 'translateX(120vw) translateY(120vh) rotate(45deg)',
+                                opacity: '0'
+                            },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        
+         ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+         ::-webkit-scrollbar-track {
+            background: rgba(5, 11, 20, 0.8);
+        }
+        
+         ::-webkit-scrollbar-thumb {
+            background: #2c5af2;
+            border-radius: 3px;
+        }
+        
+         ::-webkit-scrollbar-thumb:hover {
+            background: #00f3ff;
+        }
+        /* Glassmorphism Utilities */
+        
+        .glass-panel {
+            background: rgba(10, 10, 20, 0.4);
+            /* Made more transparent for the nebula */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+        
+        .glass-header {
+            background: rgba(5, 11, 20, 0.7);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        /* Message Bubbles */
+        
+        .msg-user {
+            background: linear-gradient(135deg, rgba(44, 90, 242, 0.3), rgba(44, 90, 242, 0.1));
+            border-left: 3px solid #2c5af2;
+            border-radius: 0 12px 12px 12px;
+        }
+        
+        .msg-bot {
+            background: linear-gradient(135deg, rgba(20, 20, 30, 0.6), rgba(30, 30, 45, 0.4));
+            border-left: 3px solid #bc13fe;
+            /* Changed to purple for aesthetic match */
+            border-radius: 12px 12px 12px 0;
+        }
+        /* Typing Indicator Animation */
+        
+        .dot-flashing {
+            position: relative;
+            width: 6px;
+            height: 6px;
+            border-radius: 5px;
+            background-color: #bc13fe;
+            color: #bc13fe;
+            animation: dot-flashing 1s infinite linear alternate;
+            animation-delay: 0.5s;
+        }
+        
+        .dot-flashing::before,
+        .dot-flashing::after {
+            content: "";
+            display: inline-block;
+            position: absolute;
+            top: 0;
+        }
+        
+        .dot-flashing::before {
+            left: -10px;
+            width: 6px;
+            height: 6px;
+            border-radius: 5px;
+            background-color: #bc13fe;
+            color: #bc13fe;
+            animation: dot-flashing 1s infinite alternate;
+            animation-delay: 0s;
+        }
+        
+        .dot-flashing::after {
+            left: 10px;
+            width: 6px;
+            height: 6px;
+            border-radius: 5px;
+            background-color: #bc13fe;
+            color: #bc13fe;
+            animation: dot-flashing 1s infinite alternate;
+            animation-delay: 1s;
+        }
+        
+        @keyframes dot-flashing {
+            0% {
+                background-color: #bc13fe;
+            }
+            50%,
+            100% {
+                background-color: rgba(188, 19, 254, 0.2);
+            }
+        }
+        /* Formula Highlight Card */
+        
+        .formula-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #bc13fe;
+            font-family: 'Courier New', monospace;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .formula-card::before {
+            content: "FORMULA";
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #bc13fe;
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-bottom-left-radius: 6px;
+        }
+        /* Background Canvas */
+        
+        #star-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: radial-gradient(ellipse at bottom, #0B0014 0%, #000000 100%);
+            /* Darker, purpler base */
+        }
+        /* Ring for the planet CSS */
+        
+        .planet-ring {
+            width: 140%;
+            height: 40%;
+            border-radius: 50%;
+            border: 10px solid rgba(255, 255, 255, 0.15);
+            border-left-color: transparent;
+            border-right-color: transparent;
+            transform: rotate(-30deg);
+        }
+    </style>
+</head>
+
+<body class="text-slate-200 font-body overflow-hidden h-screen w-screen selection:bg-neon-purple selection:text-white">
+
+    <!-- Dynamic Background -->
+    <canvas id="star-canvas"></canvas>
+    <!-- Sidebar Overlay -->
+    <div id="sidebar-overlay" class="hidden fixed inset-0 bg-black/40 z-20"></div>
+
+    <!-- Left Chat History Sidebar -->
+    <div id="left-sidebar" class="hidden fixed top-0 left-0 h-full w-72 glass-panel z-30 border-r border-slate-700/30 flex-col transition-transform duration-300 -translate-x-full">
+
+        <div class="p-4 glass-header">
+            <p class="text-xs text-slate-400 font-hud tracking-widest">CHAT HISTORY</p>
+        </div>
+
+        <div id="chat-history" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
+    </div>
+
+
+    <!-- Main Mission Container -->
+    <div class="relative h-full flex flex-col max-w-5xl mx-auto glass-panel border-x border-slate-700/30 shadow-2xl">
+
+        <!-- Wallpaper / Background Elements (Universe Theme with Planets & Comet) -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+            <!-- Deep Space Radial Background -->
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900/40 via-[#050b14] to-black"></div>
+
+            <!-- Distant Nebula Overlay (Using smoother pulse-slow) -->
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-10 mix-blend-screen animate-pulse-slow"></div>
+
+            <!-- Large Ringed Planet (Top Right) -->
+            <div class="absolute -top-20 -right-20 w-80 h-80 bg-gradient-to-br from-indigo-600 via-purple-900 to-black rounded-full shadow-[inset_-20px_-20px_50px_rgba(0,0,0,0.8)] opacity-70 animate-float flex items-center justify-center">
+                <div class="planet-ring absolute border-t-slate-500/30 border-b-slate-500/30"></div>
+            </div>
+
+            <!-- Glowing Blue Planet (Bottom Left) -->
+            <div class="absolute bottom-40 -left-10 w-32 h-32 bg-gradient-to-tr from-cyan-500 to-blue-900 rounded-full shadow-[0_0_30px_rgba(6,182,212,0.4)] opacity-80 animate-float-delayed"></div>
+
+            <!-- Comet / Shooting Star -->
+            <div class="absolute -top-10 -left-10 w-2 h-2 bg-white rounded-full shadow-[0_0_15px_white] animate-comet z-10">
+                <div class="absolute top-1/2 right-0 w-32 h-[1px] bg-gradient-to-l from-transparent via-white to-transparent transform -translate-y-1/2 blur-[0.5px]"></div>
+            </div>
+
+            <!-- Distant Star Glows (Using smoother pulse-slow instead of default pulse) -->
+            <div class="absolute top-1/4 right-1/3 w-1 h-1 bg-white rounded-full shadow-[0_0_20px_white] animate-pulse-slow"></div>
+            <div class="absolute bottom-1/4 left-1/4 w-1 h-1 bg-purple-400 rounded-full shadow-[0_0_15px_purple] animate-pulse-slow" style="animation-delay: 2s;"></div>
+        </div>
+
+        <!-- Header: Mission Control -->
+        <header class="glass-header px-4 py-3 flex items-center justify-between z-20 shrink-0 relative">
+            <div class="flex items-center gap-3">
+                <!-- Hamburger Menu Button (Chat History Toggle) -->
+                <button id="history-toggle" class="mr-2 p-2 rounded-md bg-slate-900/50 border border-slate-700 hover:border-neon-purple text-slate-300 hover:text-neon-purple transition">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+                <div class="relative w-12 h-12 flex items-center justify-center bg-slate-900/50 rounded-full border border-neon-purple/50 animate-float shadow-[0_0_15px_rgba(188,19,254,0.2)]">
+                    <i class="fa-solid fa-atom text-2xl text-neon-purple animate-spin-slow" style="animation-duration: 10s;"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-hud font-bold text-white tracking-wider uppercase drop-shadow-md">
+                        LearnLoop
+                    </h1>
+                    <p class="text-xs text-neon-purple font-hud tracking-widest uppercase opacity-80">Explore Physics & Chemistry</p>
+                </div>
+            </div>
+
+            <div class="hidden md:flex flex-col items-end">
+                <div class="flex items-center gap-2 text-xs font-hud text-neon-green mb-1">
+                    <span class="w-2 h-2 bg-neon-green rounded-full animate-pulse-slow"></span> ONLINE
+                </div>
+                <div class="text-[10px] text-slate-400 font-mono">
+                    VER: 2.5 // STUDENT: SUJI
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Chat Area: Mission Logs -->
+        <main id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth relative z-10">
+
+            <!-- Intro Message -->
+            <div class="flex flex-col gap-1 max-w-[85%] animate-slide-up">
+                <div class="flex items-center gap-2 text-[10px] font-hud text-neon-purple uppercase tracking-wider mb-1 opacity-70">
+                    <i class="fa-solid fa-robot"></i> LearnLoop
+                </div>
+                <div class="msg-bot p-4 text-sm md:text-base leading-relaxed text-slate-100 shadow-lg backdrop-blur-sm">
+                    <p>Hi Suji! Welcome to <strong class="text-neon-purple">LearnLoop</strong>! ✨</p>
+                    <p class="mt-2">I'm here to help you ace your Physics and Chemistry studies. Whether you're stuck on a tricky formula or curious about a chemical reaction, just ask!</p>
+
+                </div>
+            </div>
+
+            <!-- Dynamic messages will be appended here -->
+
+            <!-- Typing Indicator (Hidden by default) -->
+            <div id="typing-indicator" class="hidden flex flex-col gap-1 max-w-[85%] animate-slide-up">
+                <div class="flex items-center gap-2 text-[10px] font-hud text-neon-purple uppercase tracking-wider mb-1 opacity-70">
+                    <i class="fa-solid fa-microchip"></i> LearnLoop
+                </div>
+                <div class="msg-bot p-3 w-fit">
+                    <div class="flex items-center gap-3">
+                        <div class="dot-flashing mx-2"></div>
+                        <span id="typing-text" class="text-xs font-mono text-neon-purple">Thinking...</span>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Quick Action Chips -->
+
+
+        <!-- Input Area: Holodeck Control -->
+        <footer class="p-4 pt-2 glass-header z-20 shrink-0 relative">
+            <div class="relative flex items-center">
+                <input type="text" id="user-input" class="w-full bg-slate-900/60 text-slate-200 pl-12 pr-12 py-3 rounded-lg border border-slate-700 focus:border-neon-purple focus:ring-1 focus:ring-neon-purple focus:outline-none transition-all font-body placeholder-slate-400 shadow-inner"
+                    placeholder="Ask Suji's science question here..." onkeydown="if(event.key === 'Enter') handleSend()">
+
+                <!-- Input Icon -->
+                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                    <i class="fa-solid fa-sparkles"></i>
+                </div>
+
+                <!-- Send Button -->
+                <button onclick="handleSend()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-neon-purple/20 hover:bg-neon-purple/40 text-neon-purple p-2 rounded-md transition-colors">
+                    <i class="fa-solid fa-paper-plane-top"></i>
+                </button>
+            </div>
+            <div class="text-center mt-2">
+                <p class="text-[9px] text-slate-400 font-mono">LEARNLOOP AI // READY TO HELP</p>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        /* --- Starfield Background Logic --- */
+        const canvas = document.getElementById('star-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, stars;
+
+        function initStars() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            stars = [];
+            const starCount = Math.floor(width * height / 3000); // Responsive density
+
+            for (let i = 0; i < starCount; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    r: Math.random() * 1.5,
+                    alpha: Math.random(),
+                    change: Math.random() * 0.02 + 0.005,
+                    dx: (Math.random() - 0.5) * 0.1, // Slower Drift
+                    dy: (Math.random() - 0.5) * 0.1 // Slower Drift
+                });
+            }
+        }
+
+        function animateStars() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw faint gradient trails or keep simple white
+            ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+
+            stars.forEach(star => {
+                // Twinkle
+                star.alpha += star.change;
+                if (star.alpha <= 0 || star.alpha >= 0.8) star.change *= -1;
+
+                // Drift
+                star.x += star.dx;
+                star.y += star.dy;
+                if (star.x < 0) star.x = width;
+                if (star.x > width) star.x = 0;
+                if (star.y < 0) star.y = height;
+                if (star.y > height) star.y = 0;
+
+                ctx.globalAlpha = star.alpha;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            requestAnimationFrame(animateStars);
+        }
+
+        window.addEventListener('resize', initStars);
+        initStars();
+        animateStars();
+
+        /* --- Chat Interface Logic --- */
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const typingText = document.getElementById('typing-text');
+
+        // Random loading phrases
+        const loadingPhrases = [
+            "Checking my notes...",
+            "Balancing equations...",
+            "Thinking...",
+            "Looking up the formula...",
+            "Analyzing...",
+            "Running a quick simulation..."
+        ];
+
+        function scrollToBottom() {
+            chatContainer.scrollTo({
+                top: chatContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        function sendQuickAction(text) {
+            userInput.value = text;
+            handleSend();
+        }
+
+        function handleSend() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user');
+            addToHistory(text);
+
+            userInput.value = '';
+
+            showTyping();
+
+            fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: text
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    hideTyping();
+                    appendMessage(data.reply, 'bot');
+                })
+                .catch(err => {
+                    hideTyping();
+                    appendMessage("⚠️ Cannot reach backend", 'bot');
+                    console.error(err);
+                });
+        }
+
+        function appendMessage(htmlContent, type) {
+            const wrapperDiv = document.createElement('div');
+            wrapperDiv.className = "flex flex-col gap-1 max-w-[85%] animate-slide-up " + (type === 'user' ? "self-end items-end" : "self-start");
+
+            const labelDiv = document.createElement('div');
+            labelDiv.className = "flex items-center gap-2 text-[10px] font-hud uppercase tracking-wider mb-1 opacity-70 " + (type === 'user' ? "text-neon-blue flex-row-reverse" : "text-neon-purple");
+            // UPDATED: User is now Suji, Bot is LearnLoop
+            labelDiv.innerHTML = type === 'user' ?
+                `<i class="fa-solid fa-user-astronaut"></i> Suji` :
+                `<i class="fa-solid fa-robot"></i> LearnLoop`;
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = (type === 'user' ? "msg-user text-right" : "msg-bot") + " p-4 text-sm md:text-base leading-relaxed text-slate-100 shadow-lg backdrop-blur-sm";
+            bubbleDiv.innerHTML = htmlContent;
+
+            wrapperDiv.appendChild(labelDiv);
+            wrapperDiv.appendChild(bubbleDiv);
+
+            // Insert before typing indicator
+            chatContainer.insertBefore(wrapperDiv, typingIndicator);
+            scrollToBottom();
+        }
+
+        function showTyping() {
+            // Pick random loading phrase
+            typingText.innerText = loadingPhrases[Math.floor(Math.random() * loadingPhrases.length)];
+            typingIndicator.classList.remove('hidden');
+            scrollToBottom();
+        }
+
+        function hideTyping() {
+            typingIndicator.classList.add('hidden');
+        }
+
+        /* --- Chat History + Star Feature --- */
+        const sidebar = document.getElementById("left-sidebar");
+        const overlay = document.getElementById("sidebar-overlay");
+        const toggleBtn = document.getElementById("history-toggle");
+        const chatHistory = document.getElementById("chat-history");
+
+        function openSidebar() {
+            sidebar.classList.remove("hidden", "-translate-x-full");
+            overlay.classList.remove("hidden");
+        }
+
+        function closeSidebar() {
+            sidebar.classList.add("-translate-x-full");
+            overlay.classList.add("hidden");
+        }
+
+        toggleBtn.addEventListener("click", () => {
+            sidebar.classList.contains("-translate-x-full") ? openSidebar() : closeSidebar();
+        });
+
+        overlay.addEventListener("click", closeSidebar);
+
+        function addToHistory(text) {
+            const item = document.createElement("div");
+            item.className =
+                "flex items-center gap-2 px-3 py-2 rounded bg-slate-800/50 border border-slate-700 text-xs cursor-pointer hover:border-neon-purple transition";
+
+            const msg = document.createElement("span");
+            msg.className = "flex-1 truncate";
+            msg.innerText = text;
+
+            const star = document.createElement("i");
+            star.className = "fa-regular fa-star text-slate-400 hover:text-yellow-400";
+
+            let starred = false;
+
+            star.onclick = (e) => {
+                e.stopPropagation();
+                starred = !starred;
+                star.className = starred ?
+                    "fa-solid fa-star text-yellow-400" :
+                    "fa-regular fa-star text-slate-400";
+                if (starred) chatHistory.prepend(item);
+            };
+
+            item.onclick = () => {
+                userInput.value = text;
+                handleSend();
+                closeSidebar();
+            };
+
+            item.append(msg, star);
+            chatHistory.prepend(item);
+        }
+
+        /* --- Mock Response Logic (To be replaced by Gemini API) --- */
+    </script>
+</body>
+
+</html>
