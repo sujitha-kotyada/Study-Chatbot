@@ -40,7 +40,7 @@ A lightweight AI-powered Physics and Chemistry tutor chatbot built with Flask an
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/your-username/study-chatbot.git
+   git clone https://github.com/sujitha-kotyada/study-chatbot.git
    cd study-chatbot
    ```
 
@@ -137,18 +137,6 @@ study-chatbot/
 └── README.md
 ```
 
----
-
-## 🚧 Roadmap
-
-- [ ] Move API key to environment variable
-- [ ] Add chat history with context
-- [ ] Add support for more subjects (Math, Biology)
-- [ ] Add LaTeX rendering for equations
-- [ ] Add quiz/practice mode
-- [ ] Add voice input support
-
----
 
 ## 📜 License
 
